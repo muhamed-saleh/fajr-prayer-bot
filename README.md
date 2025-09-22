@@ -1,5 +1,7 @@
 # Fajr Prayer Poll Bot (بوت صلاة الفجر)
 
+<img width="858" height="140" alt="image" src="https://github.com/user-attachments/assets/e544ebab-930b-417f-b619-9f0d3877f0aa" />
+
 A sophisticated, automated Telegram bot that sends a daily poll to multiple groups one hour before Fajr prayer to encourage users to wake up for Tahajjud (قيام الليل) and Fajr.
 
 The bot is timezone-aware, fetches prayer times dynamically from the Aladhan API, and is designed to be deployed on a server like PythonAnywhere for 24/7 operation.

@@ -45,8 +45,33 @@ def load_groups_from_config():
 
 # --- Core Bot Functionality ---
 async def send_poll_to_groups(groups):
-    # This function is the same as before, no changes needed here.
-    # ...
+    """Sends the poll to a list of group objects."""
+    bot = Bot(token=TOKEN)
+    today = datetime.date.today()
+    arabic_months = {
+        1: "يناير", 2: "فبراير", 3: "مارس", 4: "أبريل", 5: "مايو", 6: "يونيو",
+        7: "يوليو", 8: "أغسطس", 9: "سبتمبر", 10: "أكتوبر", 11: "نوفمبر", 12: "ديسمبر"
+    }
+    date_str = f"{today.day} {arabic_months.get(today.month, '')} {today.year}"
+    base_question = "صحيت؟"
+    question = f"({date_str}) - {base_question}"
+    options = ["صحيت الحمد لله", "لسا مصحيتش رن عليا"]
+    
+    for group in groups:
+        chat_id = group.get('id')
+        group_name = group.get('name', 'Unknown Group')
+        if not chat_id:
+            continue
+        try:
+            logger.info(f"Sending poll to '{group_name}' (ID: {chat_id})")
+            await bot.send_poll(
+                chat_id=chat_id, question=question, options=options,
+                is_anonymous=False, allows_multiple_answers=False
+            )
+            logger.info(f"Poll sent successfully to '{group_name}'!")
+            await asyncio.sleep(1)
+        except Exception as e:
+            logger.error(f"Failed to send poll to '{group_name}'. Error: {e}")
 
 # --- Main Execution ---
 if __name__ == "__main__":
@@ -62,9 +87,6 @@ if __name__ == "__main__":
             EEST = datetime.timezone(datetime.timedelta(hours=3))
             now_egypt = datetime.datetime.now(EEST)
             
-            # --- NEW LOGIC TO CHECK TODAY AND TOMORROW ---
-            
-            # 1. First, check for today's time
             fajr_time_today = get_fajr_time(city="Mansoura", country="Egypt", for_date=now_egypt.date())
             
             if fajr_time_today:
@@ -74,7 +96,6 @@ if __name__ == "__main__":
                 
                 wait_seconds = (poll_time - now_egypt).total_seconds()
                 
-                # 2. If today's time has passed, calculate for tomorrow
                 if wait_seconds < 0:
                     logger.info("Poll time for today has passed. Calculating wait time for tomorrow's Fajr.")
                     tomorrow_date = now_egypt.date() + datetime.timedelta(days=1)
@@ -89,7 +110,6 @@ if __name__ == "__main__":
                         poll_time = tomorrow_datetime - datetime.timedelta(hours=1)
                         wait_seconds = (poll_time - now_egypt).total_seconds()
 
-                # 3. Now, wait for the calculated duration (either for today or tomorrow)
                 if wait_seconds > 0:
                     logger.info(f"Current Egypt time: {now_egypt.strftime('%H:%M')}. Next poll at: {poll_time.strftime('%Y-%m-%d %H:%M')}.")
                     logger.info(f"Waiting for {wait_seconds / 3600:.2f} hours.")
